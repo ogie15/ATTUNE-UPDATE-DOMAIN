@@ -1,0 +1,233 @@
+
+#Region for ExecutionPolicy
+# ===========================================================================
+# Get Execution Policy of the current process
+$Script:ProcessEP = Get-ExecutionPolicy -Scope Process
+
+#Get the value of the Execution Policy and save it in the Variable
+$Script:ValueProcessEP = ($Script:ProcessEP).value__
+
+# Check if the Execution Policy of the process is set to Unrestricted
+if ($Script:ValueProcessEP -eq 0) {
+
+    # echo the message
+    Write-Output "Execution Policy is already set to Unrestricted for the Process"
+# Check if the Execution Policy of the process is already set
+}else{
+
+    # Set the ExecutionPolicy of the Process to Unrestricted
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Unrestricted -Force -Confirm:$false
+
+    # Checks if the Execution Policy has been set
+    if ((Get-ExecutionPolicy -Scope Process).value__ -eq 0) {
+
+        # echo the message
+        Write-Output "Execution Policy is now set to Unrestricted for the Process"
+    }
+}
+# ===========================================================================
+#EndRegion for ExecutionPolicy 
+
+
+
+#Region Connect
+# Set the Global Admin Sign-in Userprincipalname
+$Script:UserName = "{username0365.value}"
+
+# Set the Global Admin Password
+$Script:Password = "{password0365.value}"
+
+# Convert the password to secure string
+$PasswordToSecureString = ConvertTo-SecureString $Password -AsPlainText -Force
+
+# Saves UserName and Password for automation in the variable
+$UserCredential = New-Object System.Management.Automation.PSCredential ($UserName, $PasswordToSecureString)
+
+# Connects to the Office 365 (Azure Active Directory)
+Connect-MsolService -Credential $UserCredential
+#EndRegion Connect
+
+
+
+#Region HashTable configuration
+$Script:HashConfig = {hashconfig0365.value}
+#EndRegion HashTable configuration
+
+
+
+#Region Update-Domain Function
+function Update-Domain {
+    # Set the Cmdlet binding properties 
+    [CmdletBinding(PositionalBinding = $false, SupportsShouldProcess = $false, ConfirmImpact = 'None')]
+    param (
+        # Set the Domain parameter
+        [Parameter(Mandatory = $true,
+            ValueFromPipeline = $false,
+            Position = 0,
+            HelpMessage = "Enter a Verified Domain name on your Office 365 Tenant")]
+        [Alias("Dn")]
+        [String]
+        $Domain,
+
+        # Set the UserPrincipalName parameter
+        [Parameter(Mandatory = $true,
+            ValueFromPipeline = $true,
+            ValueFromPipelineByPropertyName = $true)]
+        [String]
+        $UserPrincipalName,
+        
+        # Set the Force Parameter (switch)
+        [Switch]$Force
+
+    )  
+    begin {
+        # Set the divisor for the write-progress cmdlet
+        [Int32]$Script:Divisor = 0
+
+        # Set the incremental variable 
+        [Int32]$Script:i = 0 
+    }
+    # process {
+        
+    # }
+    end {
+
+        # Creates a loop through all the input(UserPrincipalName) passed into the CMDLET
+        foreach ($UserPrincipalNames in $input) {
+            
+            # If force switch is used
+            if ($Force) { 
+
+                #Region Get Prefix
+                $Script:Symbol = $UserPrincipalNames.UserPrincipalName.IndexOf("@")
+
+                $Script:Prefix = $UserPrincipalNames.UserPrincipalName.Substring(0, $Script:Symbol)
+
+                $Script:NewUpn = ($Script:Prefix + "@" + $Domain)
+                #EndRegion Get Prefix
+
+                # Set write-progress incremental variable
+                [Int32]$Script:i = [Int32]$Script:i + 1
+
+                # Pause the scripts for 1 millisecond
+                Start-Sleep -m 1
+
+                try {
+                    #Region Set New UserName
+                    Set-MsolUserPrincipalName -UserPrincipalName $UserPrincipalNames.UserPrincipalName -NewUserPrincipalName $Script:NewUpn
+                    #EndRegion Set New UserName
+
+                    # Set the variable to the OldUpn of the User 
+                    $Script:OldUpn = (($UserPrincipalNames).UserPrincipalName).tostring()
+
+                    # Write out message to screen regarding the change that has occured
+                    Write-Output `n "$Script:OldUpn has been changed to $Script:NewUpn"
+                }
+                catch {
+                    # Echo out an error message
+                    Write-Error ";( Error is above"
+                    break #break the code
+                }
+
+            # IF Force Switch is not used 
+            }else{
+            
+                # Write out error message
+                Write-Output "Force switch was not used"
+
+            }
+        }
+    }
+}
+#EndRegion Update-Domain Function
+
+
+
+#Region for seting update for Domain after checking if a CSV File is used or not
+function Set-Update{
+
+    # To know what pattern of cmdlet to run if CSV is used 
+    if ($Script:HashConfig['CSV'] -eq $true) {
+
+        # Set the value of full path 
+        $Script:FinalPath = $Script:HashConfig['CSVPath'] + "\" + $Script:HashConfig['CSVFileName']
+    
+        # Use CSV file to change the users in the domain
+        Import-Csv -Path $Script:FinalPath | Update-Domain -Domain $Script:HashConfig['NewDomain'] -Force
+    
+    # To know what pattern of cmdlet to run if CSV is not used
+    }elseif ($Script:HashConfig['CSV'] -eq $false) {
+
+        # Save the domain with special test character to run a check
+        $Script:ModOldDomain = "*@" + $Script:HashConfig['OldDomain'] + "*"
+
+        # Check users' Domain for specified users
+        Get-MsolUser | Where-Object { $_.UserPrincipalName -like $Script:ModOldDomain } | Update-Domain -Domain $Script:HashConfig['NewDomain'] -Force
+
+    }
+}
+#EndRegion for seting update for Domain after checking if it is though a CSV File or not
+
+
+
+#Region This function checks if the path is correct, if correct it runs the Set-Update function
+function Get-PathandFile {
+
+    # Save the value of the Csv path that is set in the configuration hashtable to the variable
+    $Script:CSVPath = $Script:HashConfig['CSVPath']
+
+    # Test Path & File segment (Path) (if it does not exist)
+    if (!(Test-Path -Path $Script:HashConfig['CSVPath'])) {
+
+        # Write out an error message if path does not exist
+        Write-Output "The File path $Script:CSVPath does not exist"
+
+    # if it exist perform the below operation
+    }
+    else {
+        
+        # Write out a message if the file path exist
+        Write-Output "The File path $Script:CSVPath exist..."
+
+        # Save the value of the Csv filename that is set in the configuration hashtable to the variable
+        $Script:CSVFileName = $Script:HashConfig['CSVFileName']
+
+        # Get the particular file (if it does not exist)
+        if (!(Get-ChildItem -Path $Script:HashConfig['CSVPath'] | Where-Object { $_.Name -like $Script:HashConfig['CSVFileName'] })) {
+        
+            # Writes out message to the screen
+            Write-Output "The File $Script:CSVFileName does not exist"
+        
+        # If the file exist 
+        }
+        else {
+
+            # Writes out message to the screen
+            Write-Output $"The File $Script:CSVFileName exist"
+
+            # Run the function Set-Update
+            Set-Update
+
+        }
+    }
+}
+#EndRegion This function checks if the path is correct, if correct it runs the Set-Update function
+
+
+
+#Region Check the configuration hashtable
+if ($null -eq $Script:HashConfig['CSV'] -or $Script:HashConfig['OldDomain'] -eq "" -or $Script:HashConfig['NewDomain'] -eq ""`
+-or $Script:HashConfig['CSVPath'] -eq "" -or $Script:HashConfig['CSVFileName'] -eq "" -or $null -eq $Script:HashConfig['OldDomain'] -or $null`
+-eq $Script:HashConfig['NewDomain'] -or $null -eq $Script:HashConfig['CSVPath'] -or $null -eq $Script:HashConfig['CSVFileName']) 
+{
+    # Write out error message
+    Write-Output "Please check the configuration file"
+
+# if the configuration table is fine then proceed
+}else{
+
+    # Run PathandFile Checker function 
+    Get-PathandFile
+
+}
+#EndRegion Check the configuration hashtable
