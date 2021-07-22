@@ -1,4 +1,3 @@
-
 #Region for ExecutionPolicy
 # ===========================================================================
 # Get Execution Policy of the current process
@@ -30,7 +29,10 @@ if ($Script:ValueProcessEP -eq 0) {
 
 
 
-#Region Connect
+#Region ConnectTo0365
+# Import Module for MSOnline
+Import-Module -Name MSOnline
+
 # Set the Global Admin Sign-in Userprincipalname
 $Script:UserName = "{username0365.value}"
 
@@ -45,13 +47,13 @@ $UserCredential = New-Object System.Management.Automation.PSCredential ($UserNam
 
 # Connects to the Office 365 (Azure Active Directory)
 Connect-MsolService -Credential $UserCredential
-#EndRegion Connect
+#EndRegion ConnectTo0365
 
 
 
-#Region HashTable configuration
+#Region HashTable Configuration
 $Script:HashConfig = {hashconfig0365.value}
-#EndRegion HashTable configuration
+#EndRegion HashTable Configuration
 
 
 
@@ -183,8 +185,7 @@ function Get-PathandFile {
         Write-Output "The File path $Script:CSVPath does not exist"
 
     # if it exist perform the below operation
-    }
-    else {
+    }else {
         
         # Write out a message if the file path exist
         Write-Output "The File path $Script:CSVPath exist..."
@@ -199,8 +200,7 @@ function Get-PathandFile {
             Write-Output "The File $Script:CSVFileName does not exist"
         
         # If the file exist 
-        }
-        else {
+        }else {
 
             # Writes out message to the screen
             Write-Output $"The File $Script:CSVFileName exist"
@@ -214,20 +214,36 @@ function Get-PathandFile {
 #EndRegion This function checks if the path is correct, if correct it runs the Set-Update function
 
 
-
 #Region Check the configuration hashtable
-if ($null -eq $Script:HashConfig['CSV'] -or $Script:HashConfig['OldDomain'] -eq "" -or $Script:HashConfig['NewDomain'] -eq ""`
--or $Script:HashConfig['CSVPath'] -eq "" -or $Script:HashConfig['CSVFileName'] -eq "" -or $null -eq $Script:HashConfig['OldDomain'] -or $null`
--eq $Script:HashConfig['NewDomain'] -or $null -eq $Script:HashConfig['CSVPath'] -or $null -eq $Script:HashConfig['CSVFileName']) 
-{
+# check the value of the CSV value if $True or $False entered
+if ($Script:HashConfig['CSV'] -eq $true) {
+    
+    # Check the other parameters on the configuration file
+    if ($Script:HashConfig['NewDomain'] -eq "" -or $null -eq $Script:HashConfig['NewDomain']`
+    -or $Script:HashConfig['CSVPath'] -eq "" -or $Script:HashConfig['CSVFileName'] -eq ""`
+    -or $null -eq $Script:HashConfig['CSVPath'] -or $null -eq $Script:HashConfig['CSVFileName']) {
+        
+        # Write out error message
+        Write-Output "Please check the configuration file"
+    }else{
+        
+        # Run PathandFile Checker function 
+        Get-PathandFile
+    }
+}elseif ($Script:HashConfig['CSV'] -eq $false) {
+
+    if ($Script:HashConfig['OldDomain'] -eq "" -or $Script:HashConfig['NewDomain'] -eq ""`
+    -or $null -eq $Script:HashConfig['OldDomain'] -or $null -eq $Script:HashConfig['NewDomain']) {
+        
+        # Write out error message
+        Write-Output "Please check the configuration file"
+    }else {
+        
+        # Run the function Set-Update
+        Set-Update
+    }
+}else {
     # Write out error message
-    Write-Output "Please check the configuration file"
-
-# if the configuration table is fine then proceed
-}else{
-
-    # Run PathandFile Checker function 
-    Get-PathandFile
-
-}
+    Write-Output "Please check the data type of the value entered in the 'CSV' key in the HashTable Configuration 'ONLY datatype boolen Accepted!!'"
+}   
 #EndRegion Check the configuration hashtable
