@@ -1,13 +1,3 @@
-
-<!-- @{'CSV'=$false;'OldDomain'="contoso.com";'NewDomain'="fabrikram.com";'CSVPath'="C:\Users\user\Desktop\ATTUNE\ATTUNE_PUSH_FILES";'CSVFileName'="Users.csv"} -->
-
-@{'CSV'=$true;'NewDomain'="fabrikram.com";'CSVPath'="C:\Users\user\Desktop\ATTUNE\ATTUNE_PUSH_FILES";'CSVFileName'="Users.csv"}
-
-@{'CSV'=$false;'OldDomain'="jago.ga";'NewDomain'="blokeessentials.tk"}
-
-blokeessentials.tk
-
-
 ## **Update-Domain**
 > #### **Region for ExecutionPolicy**
 > - *The script above first gets the execution policy of the current PowerShell session.*
@@ -55,10 +45,10 @@ blokeessentials.tk
 > > | UserPrincipalName |
 > > | :----: | 
 > > | Test001@contoso.com |
-> > | Test002@contoso.com|
-> > | Test003@contoso.com|
-> > | Test004@contoso.com|
-> > | Test005@contoso.com|
+> > | Test002@contoso.com |
+> > | Test003@contoso.com |
+> > | Test004@contoso.com |
+> > | Test005@contoso.com |
 > > ---
 >
 > #### *Below is a table explaining how to create the variables on Attune with matching data types:*

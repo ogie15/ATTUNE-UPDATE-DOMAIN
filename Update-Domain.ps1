@@ -122,7 +122,7 @@ function Update-Domain {
                     # Set the variable to the OldUpn of the User 
                     $Script:OldUpn = (($UserPrincipalNames).UserPrincipalName).tostring()
 
-                    # Write out message to screen regarding the change that has occured
+                    # Write out a message to screen regarding the change that has occurred
                     Write-Output `n "$Script:OldUpn has been changed to $Script:NewUpn"
                 }
                 catch {
@@ -134,7 +134,7 @@ function Update-Domain {
             # IF Force Switch is not used 
             }else{
             
-                # Write out error message
+                # Write out the error message
                 Write-Output "Force switch was not used"
 
             }
@@ -145,7 +145,7 @@ function Update-Domain {
 
 
 
-#Region for seting update for Domain after checking if a CSV File is used or not
+#Region for setting update for Domain after checking if it is through a CSV File or not
 function Set-Update{
 
     # To know what pattern of cmdlet to run if CSV is used 
@@ -168,7 +168,7 @@ function Set-Update{
 
     }
 }
-#EndRegion for seting update for Domain after checking if it is though a CSV File or not
+#EndRegion for setting update for Domain after checking if it is through a CSV File or not
 
 
 
@@ -181,13 +181,13 @@ function Get-PathandFile {
     # Test Path & File segment (Path) (if it does not exist)
     if (!(Test-Path -Path $Script:HashConfig['CSVPath'])) {
 
-        # Write out an error message if path does not exist
+        # Write out an error message if the path does not exist
         Write-Output "The File path $Script:CSVPath does not exist"
 
-    # if it exist perform the below operation
+    # if it exists perform the below operation
     }else {
         
-        # Write out a message if the file path exist
+        # Write out a message if the file path exists
         Write-Output "The File path $Script:CSVPath exist..."
 
         # Save the value of the Csv filename that is set in the configuration hashtable to the variable
@@ -196,13 +196,13 @@ function Get-PathandFile {
         # Get the particular file (if it does not exist)
         if (!(Get-ChildItem -Path $Script:HashConfig['CSVPath'] | Where-Object { $_.Name -like $Script:HashConfig['CSVFileName'] })) {
         
-            # Writes out message to the screen
+            # Writes out the message to the screen
             Write-Output "The File $Script:CSVFileName does not exist"
         
         # If the file exist 
         }else {
 
-            # Writes out message to the screen
+            # Writes out the message to the screen
             Write-Output $"The File $Script:CSVFileName exist"
 
             # Run the function Set-Update
@@ -223,7 +223,7 @@ if ($Script:HashConfig['CSV'] -eq $true) {
     -or $Script:HashConfig['CSVPath'] -eq "" -or $Script:HashConfig['CSVFileName'] -eq ""`
     -or $null -eq $Script:HashConfig['CSVPath'] -or $null -eq $Script:HashConfig['CSVFileName']) {
         
-        # Write out error message
+        # Write out an error message
         Write-Output "Please check the configuration file"
     }else{
         
@@ -235,7 +235,7 @@ if ($Script:HashConfig['CSV'] -eq $true) {
     if ($Script:HashConfig['OldDomain'] -eq "" -or $Script:HashConfig['NewDomain'] -eq ""`
     -or $null -eq $Script:HashConfig['OldDomain'] -or $null -eq $Script:HashConfig['NewDomain']) {
         
-        # Write out error message
+        # Write out an error message
         Write-Output "Please check the configuration file"
     }else {
         
@@ -243,7 +243,7 @@ if ($Script:HashConfig['CSV'] -eq $true) {
         Set-Update
     }
 }else {
-    # Write out error message
-    Write-Output "Please check the data type of the value entered in the 'CSV' key in the HashTable Configuration 'ONLY datatype boolen Accepted!!'"
+    # Write out an error message
+    Write-Output "Please check the data type of the value entered in the 'CSV' key in the HashTable Configuration 'ONLY datatype boolean Accepted!!'"
 }   
 #EndRegion Check the configuration hashtable
