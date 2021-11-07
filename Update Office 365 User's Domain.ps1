@@ -1,5 +1,4 @@
 #Region for ExecutionPolicy
-# ===========================================================================
 # Get Execution Policy of the current process
 $Script:ProcessEP = Get-ExecutionPolicy -Scope Process
 
@@ -24,7 +23,6 @@ if ($Script:ValueProcessEP -eq 0) {
         Write-Output "Execution Policy is now set to Unrestricted for the Process"
     }
 }
-# ===========================================================================
 #EndRegion for ExecutionPolicy 
 
 
@@ -34,10 +32,16 @@ if ($Script:ValueProcessEP -eq 0) {
 Import-Module -Name MSOnline
 
 # Set the Global Admin Sign-in Userprincipalname
-$Script:UserName = "{username0365.value}"
+$Script:UserName = "{0365username.value}"
 
 # Set the Global Admin Password
-$Script:Password = "{password0365.value}"
+$Script:Password = "{0365password.value}"
+
+
+#Region HashTable Configuration
+$Script:HashConfig = {0365hashconfig.value}
+#EndRegion HashTable Configuration
+
 
 # Convert the password to secure string
 $PasswordToSecureString = ConvertTo-SecureString $Password -AsPlainText -Force
@@ -48,13 +52,6 @@ $UserCredential = New-Object System.Management.Automation.PSCredential ($UserNam
 # Connects to the Office 365 (Azure Active Directory)
 Connect-MsolService -Credential $UserCredential
 #EndRegion ConnectTo0365
-
-
-
-#Region HashTable Configuration
-$Script:HashConfig = {hashconfig0365.value}
-#EndRegion HashTable Configuration
-
 
 
 #Region Update-Domain Function
@@ -130,13 +127,10 @@ function Update-Domain {
                     Write-Error ";( Error is above"
                     break #break the code
                 }
-
             # IF Force Switch is not used 
             }else{
-            
                 # Write out the error message
                 Write-Output "Force switch was not used"
-
             }
         }
     }

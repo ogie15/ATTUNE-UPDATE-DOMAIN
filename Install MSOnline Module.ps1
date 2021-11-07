@@ -1,5 +1,4 @@
 #Region for ExecutionPolicy
-# ===========================================================================
 # Get Execution Policy of the current process
 $Script:ProcessEP = Get-ExecutionPolicy -Scope Process
 
@@ -9,9 +8,9 @@ $Script:ValueProcessEP = ($Script:ProcessEP).value__
 # Check if the Execution Policy of the process is set to Unrestricted
 if ($Script:ValueProcessEP -eq 0) {
 
-    # echo the message
+    # Write the message
     Write-Output "Execution Policy is already set to Unrestricted for the Process"
-# Check if the Execution Policy of the process is already set
+    # Check if the Execution Policy of the process is already set
 }else{
 
     # Set the ExecutionPolicy of the Process to Unrestricted
@@ -20,17 +19,14 @@ if ($Script:ValueProcessEP -eq 0) {
     # Checks if the Execution Policy has been set
     if ((Get-ExecutionPolicy -Scope Process).value__ -eq 0) {
 
-        # echo the message
+        # Write the message
         Write-Output "Execution Policy is now set to Unrestricted for the Process"
     }
 }
-# ===========================================================================
 #EndRegion for ExecutionPolicy 
 
 
-
 #Region to Check if MSOnline Module is installed 
-# ===========================================================================
 #Region if module is installed, update module if version is not up to Version "1.1.183.57"
 if($null -ne (Get-InstalledModule -Name MSOnline -RequiredVersion "1.1.183.57" -ErrorVariable +Error365V -ErrorAction SilentlyContinue)) {
 
@@ -59,7 +55,6 @@ if($null -ne (Get-InstalledModule -Name MSOnline -RequiredVersion "1.1.183.57" -
         Write-Output "MSOnline PowerShell Module is updated :)"
     }
 #EndRegion if the module is installed, update module if the version is not up to Version "1.1.183.57"
-# ===========================================================================
 #Region If the module is not installed, install it 
 }else{
 
@@ -76,5 +71,4 @@ if($null -ne (Get-InstalledModule -Name MSOnline -RequiredVersion "1.1.183.57" -
     Write-Output "MSOnline PowerShell Module is installed :)"
 }
 #EndRegion If the module is not installed, install it
-# ===========================================================================
 #EndRegion Check if MSOnline Module is installed
