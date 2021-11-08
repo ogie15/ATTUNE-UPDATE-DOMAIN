@@ -64,6 +64,8 @@ if($null -ne (Get-InstalledModule -Name MSOnline -RequiredVersion "1.1.183.57" -
     # echo the message
     Write-Output "MSOnline PowerShell Module is installing..."
 
+    Import-Module PowerShellGet 
+
     # Install MSOnline Powershell Module 
     Install-Module -Name MSOnline -RequiredVersion "1.1.183.57" -Scope "CurrentUser" -AllowClobber:$true -Confirm:$false -Force
 
